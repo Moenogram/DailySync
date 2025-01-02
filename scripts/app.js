@@ -591,3 +591,32 @@ expenseForm.addEventListener('submit', (e) => {
     expenseForm.reset();
   }
 });
+// scripts/app.js (Fortsetzung)
+
+const breathingAnimation = document.getElementById('breathing-animation');
+
+function startBreathingExercise() {
+  // Hier kannst du eine komplexere Animation oder Anleitung einbauen
+  let phase = 0;
+  const phases = ['Einatmen', 'Anhalten', 'Ausatmen'];
+  const timings = [8000, 5000, 7000]; // in Millisekunden
+
+  function nextPhase() {
+    if (phase < phases.length) {
+      breathingAnimation.innerHTML = `<p class="text-center text-white">${phases[phase]}</p>`;
+      setTimeout(() => {
+        phase++;
+        nextPhase();
+      }, timings[phase]);
+    } else {
+      breathingAnimation.innerHTML = `<p class="text-center text-white">Übung beendet</p>`;
+    }
+  }
+
+  nextPhase();
+}
+
+emergencyButton.addEventListener('click', () => {
+  breathingModal.classList.remove('hidden');
+  startBreathingExercise();
+});
