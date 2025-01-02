@@ -508,3 +508,24 @@ function switchTab(tabName) {
   // Zeige die ausgewählte Sektion
   document.getElementById(tabName).classList.remove('hidden');
 }
+// scripts/app.js (Fortsetzung)
+
+// DOM Elements für Tabs
+const tabDashboard = document.getElementById('tab-dashboard');
+const tabMorningRoutine = document.getElementById('tab-morning-routine');
+const tabFinance = document.getElementById('tab-finance');
+
+// Event Listener für Tabs
+tabDashboard.addEventListener('click', () => switchTab('dashboard'));
+tabMorningRoutine.addEventListener('click', () => switchTab('morning-routine'));
+tabFinance.addEventListener('click', () => switchTab('finance'));
+
+// Funktion zum Wechseln der Tabs
+function switchTab(tabName) {
+  state.currentTab = tabName;
+  saveState();
+  // Verstecke alle Sektionen
+  document.querySelectorAll('main > section').forEach(section => section.classList.add('hidden'));
+  // Zeige die ausgewählte Sektion
+  document.getElementById(tabName).classList.remove('hidden');
+}
