@@ -559,3 +559,18 @@ function renderTasks() {
 
 // Initiales Rendern der Aufgaben
 renderTasks();
+// scripts/app.js (Fortsetzung)
+
+// Render Finanzverwaltung
+function renderFinance() {
+  document.getElementById('finance-budget').textContent = `${state.budget}€`;
+  document.getElementById('finance-spent').textContent = `${state.spent}€`;
+  const progressPercent = state.budget > 0 ? (state.spent / state.budget) * 100 : 0;
+  document.getElementById('finance-progress').style.width = `${progressPercent}%`;
+}
+
+// Aktualisiere die Dashboard- und Finanzansicht nach dem Laden
+document.addEventListener('DOMContentLoaded', () => {
+  renderDashboard();
+  renderFinance();
+});
