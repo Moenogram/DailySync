@@ -574,3 +574,20 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDashboard();
   renderFinance();
 });
+// scripts/app.js (Fortsetzung)
+
+// DOM Elements für Ausgaben
+const expenseForm = document.getElementById('expense-form');
+const expenseAmount = document.getElementById('expense-amount');
+
+// Event Listener für Ausgabenform
+expenseForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const amount = parseFloat(expenseAmount.value);
+  if (!isNaN(amount) && amount > 0) {
+    state.spent += amount;
+    saveState();
+    renderFinance();
+    expenseForm.reset();
+  }
+});
