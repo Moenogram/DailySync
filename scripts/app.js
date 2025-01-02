@@ -620,3 +620,25 @@ emergencyButton.addEventListener('click', () => {
   breathingModal.classList.remove('hidden');
   startBreathingExercise();
 });
+// scripts/app.js (Fortsetzung)
+
+// Täglicher Reset
+function dailyReset() {
+  const today = new Date().toLocaleDateString();
+  const lastReset = localStorage.getItem('lastReset');
+
+  if (lastReset !== today) {
+    state.spent = 0;
+    state.triggerFreeDays += 1;
+    saveState();
+    renderDashboard();
+    renderFinance();
+    // Weitere Resets falls nötig
+    localStorage.setItem('lastReset', today);
+  }
+}
+
+// Führe den Reset beim Laden der Seite aus
+document.addEventListener('DOMContentLoaded', () => {
+  dailyReset();
+});
