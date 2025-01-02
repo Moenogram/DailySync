@@ -529,3 +529,33 @@ function switchTab(tabName) {
   // Zeige die ausgewählte Sektion
   document.getElementById(tabName).classList.remove('hidden');
 }
+// scripts/app.js (Fortsetzung)
+
+// Render Tasks in Morgenroutine
+function renderTasks() {
+  const taskList = document.getElementById('task-list');
+  taskList.innerHTML = '';
+  state.tasks.forEach(task => {
+    const li = document.createElement('li');
+    li.className = 'flex items-center bg-white p-3 rounded shadow hover:shadow-md transition';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = task.completed;
+    checkbox.className = 'mr-2';
+    checkbox.addEventListener('change', () => toggleTask(task.id));
+    
+    const span = document.createElement('span');
+    span.textContent = task.text;
+    if (task.completed) {
+      span.classList.add('line-through', 'text-gray-500');
+    }
+    
+    li.appendChild(checkbox);
+    li.appendChild(span);
+    taskList.appendChild(li);
+  });
+}
+
+// Initiales Rendern der Aufgaben
+renderTasks();
