@@ -1,6 +1,6 @@
-/* styles/styles.css */
-
-/* CSS-Variablen */
+/*************************************************************
+ * CSS-Variablen
+ *************************************************************/
 :root {
   /* Colors */
   --primary: #4f46e5;
@@ -21,23 +21,33 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
 
-  /* Animations */
+  /* Animations & Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
   --transition-slow: 500ms ease;
 }
 
-/* Global Styles */
+/*************************************************************
+ * Globale Styles
+ *************************************************************/
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background);
+  color: var(--text-primary);
 }
 
-/* Glasmorphismus-Effekt für Header */
+/* Header Glasmorphismus-Effekt */
 header {
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px); /* Für Glasmorphismus */
 }
 
-/* Breathing Animation */
+/*************************************************************
+ * Animationen
+ *************************************************************/
+
+/* Breathing Circle Animation */
 @keyframes breathe {
   0% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.2); opacity: 0.7; }
@@ -53,7 +63,7 @@ header {
   animation: breathe 8s infinite;
 }
 
-/* Skeleton Loading States */
+/* Skeleton Loading State */
 .skeleton {
   background-color: #e2e8f0;
   border-radius: 4px;
@@ -66,6 +76,10 @@ header {
   0% { background-position: -1000px 0; }
   100% { background-position: 1000px 0; }
 }
+
+/*************************************************************
+ * Buttons, FAB, etc.
+ *************************************************************/
 
 /* Floating Action Button */
 .fab {
@@ -89,7 +103,9 @@ header {
   transform: scale(1.1);
 }
 
-/* High Contrast Mode */
+/*************************************************************
+ * High Contrast Mode (Optional)
+ *************************************************************/
 .high-contrast {
   --text-primary: #ffffff;
   --text-secondary: #dddddd;
@@ -97,7 +113,9 @@ header {
   --surface: #1a202c;
 }
 
-/* Dark Mode */
+/*************************************************************
+ * Dark Mode (Optional)
+ *************************************************************/
 body.dark {
   --background: #1a202c;
   --surface: #2d3748;
@@ -106,26 +124,3 @@ body.dark {
   background-color: var(--background);
   color: var(--text-primary);
 }
-/* styles/styles.css */
-
-/* Glaseffekt für Header */
-header {
-  backdrop-filter: blur(10px);
-}
-
-/* Breathing Circle Animation */
-@keyframes breathe {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-#breathing-animation {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto;
-  border-radius: 50%;
-  background: linear-gradient(to right, #4facfe, #00f2fe);
-  animation: breathe 8s infinite;
-}
-
