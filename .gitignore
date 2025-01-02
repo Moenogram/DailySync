@@ -1,0 +1,3 @@
+node_modules/
+.DS_Store # macOS spezifische Datei
+.idea # z.B. für JetBrains IDE
