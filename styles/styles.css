@@ -1,0 +1,109 @@
+/* styles/styles.css */
+
+/* CSS-Variablen */
+:root {
+  /* Colors */
+  --primary: #4f46e5;
+  --primary-light: #818cf8;
+  --secondary: #7c3aed;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --background: #f3f4f6;
+  --surface: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Animations */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+/* Global Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Glasmorphismus-Effekt für Header */
+header {
+  backdrop-filter: blur(10px);
+}
+
+/* Breathing Animation */
+@keyframes breathe {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+#breathing-animation {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: linear-gradient(to right, #4facfe, #00f2fe);
+  animation: breathe 8s infinite;
+}
+
+/* Skeleton Loading States */
+.skeleton {
+  background-color: #e2e8f0;
+  border-radius: 4px;
+  animation: shimmer 1.5s infinite;
+  background: linear-gradient(to right, #e2e8f0 8%, #f8fafc 18%, #e2e8f0 33%);
+  background-size: 1000px 104px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+/* Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  background-color: var(--primary);
+  color: #fff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.fab:hover {
+  transform: scale(1.1);
+}
+
+/* High Contrast Mode */
+.high-contrast {
+  --text-primary: #ffffff;
+  --text-secondary: #dddddd;
+  --background: #000000;
+  --surface: #1a202c;
+}
+
+/* Dark Mode */
+body.dark {
+  --background: #1a202c;
+  --surface: #2d3748;
+  --text-primary: #e2e8f0;
+  --text-secondary: #cbd5e0;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
