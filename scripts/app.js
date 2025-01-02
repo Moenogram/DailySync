@@ -1,8 +1,13 @@
-// scripts/app.js
+/*************************************************************
+ *  app.js – Bereinigte Version
+ *************************************************************/
 
-// Import von Chart.js über CDN
+// Falls du Chart.js nutzen möchtest (CDN-Import):
 import Chart from 'https://cdn.jsdelivr.net/npm/chart.js';
 
+/**
+ * Globale Anwendungskonfiguration und -zustand
+ */
 const appState = {
   user: {
     name: 'Muhammet Şen',
@@ -36,10 +41,15 @@ const appState = {
       notificationPreferences: {},
       budget: 20
     }
-  }
+  },
+  // Für Tab-Steuerung etc.
+  currentTab: 'dashboard'
 };
 
-// Initialize App
+/*************************************************************
+ *  Initialisierung
+ *************************************************************/
+
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
 });
@@ -47,6 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function initApp() {
   loadState();
   setupEventListeners();
+  
+  // Erste Render-Funktionen
   renderDashboard();
   renderFinance();
   renderTasks();
@@ -54,10 +66,21 @@ function initApp() {
   renderCopingStrategies();
   renderProgressChart();
   generateRecommendations();
+  renderMood(); // Zeigt ggf. die aktuelle Stimmung an
+  
+  // Eventuelle Gesture-Handler
   setupGestureHandlers();
+  
+  // Periodische Resets / Checks
   startPeriodicUpdates();
+  
+  // Risiko-Erkennung (z. B. Stimmung)
   detectRiskPatterns();
 }
+
+/*************************************************************
+ *  State Management
+ *************************************************************/
 
 function loadState() {
   const savedState = localStorage.getItem('dailySyncState');
@@ -75,7 +98,10 @@ function saveState() {
   localStorage.setItem('dailySyncState', JSON.stringify(appState));
 }
 
-// Update Date in Header
+/*************************************************************
+ *  Datum / Dashboard
+ *************************************************************/
+
 function updateDate() {
   const currentDateElement = document.getElementById('current-date');
   const today = new Date();
@@ -83,130 +109,59 @@ function updateDate() {
   currentDateElement.textContent = today.toLocaleDateString('de-DE', options);
 }
 
-// Render Dashboard Metrics
 function renderDashboard() {
   updateDate();
   document.getElementById('daily-budget').textContent = `${appState.user.dailyBudget}€`;
+  
   const remaining = appState.user.dailyBudget - appState.user.spent;
   document.getElementById('remaining-budget').textContent = `Verbleibend: ${remaining}€`;
+  
   document.getElementById('energy-level').textContent = `${appState.user.energyLevel}%`;
   document.getElementById('trigger-free-days').textContent = `${appState.user.triggerFreeDays} Tage`;
 }
 
-// Render Finance
+/*************************************************************
+ *  Finanzverwaltung
+ *************************************************************/
+
 function renderFinance() {
-  document.getElementById('finance-budget').textContent = `${appState.user.dailyBudget}€`;
-  document.getElementById('finance-spent').textContent = `${appState.user.spent}€`;
-  const progressPercent = appState.user.dailyBudget > 0 ? (appState.user.spent / appState.user.dailyBudget) * 100 : 0;
-  document.getElementById('finance-progress').style.width = `${progressPercent}%`;
+  const financeBudget = document.getElementById('finance-budget');
+  const financeSpent = document.getElementById('finance-spent');
+  const financeProgress = document.getElementById('finance-progress');
+
+  if (!financeBudget || !financeSpent || !financeProgress) return;
+
+  financeBudget.textContent = `${appState.user.dailyBudget}€`;
+  financeSpent.textContent = `${appState.user.spent}€`;
+
+  const progressPercent = appState.user.dailyBudget > 0
+    ? (appState.user.spent / appState.user.dailyBudget) * 100
+    : 0;
+  financeProgress.style.width = `${progressPercent}%`;
 }
 
-// Event Listener Setup
-function setupEventListeners() {
-  // Emergency Button
-  const emergencyButton = document.getElementById('emergency-button');
-  const breathingModal = document.getElementById('breathing-modal');
-  const closeBreathingModal = document.getElementById('close-breathing-modal');
+/*************************************************************
+ *  Aufgaben / Morgenroutine
+ *************************************************************/
 
-  emergencyButton.addEventListener('click', () => {
-    breathingModal.classList.remove('hidden');
-    startBreathingExercise();
-    triggerEmergencyPlan();
-  });
-
-  closeBreathingModal.addEventListener('click', () => {
-    breathingModal.classList.add('hidden');
-  });
-
-  // Tab Navigation
-  const tabDashboard = document.getElementById('tab-dashboard');
-  const tabMorningRoutine = document.getElementById('tab-morning-routine');
-  const tabFinance = document.getElementById('tab-finance');
-  const tabMoodTracking = document.getElementById('tab-mood-tracking');
-  const tabEmergencyContacts = document.getElementById('tab-emergency-contacts');
-
-  tabDashboard.addEventListener('click', () => switchTab('dashboard'));
-  tabMorningRoutine.addEventListener('click', () => switchTab('morning-routine'));
-  tabFinance.addEventListener('click', () => switchTab('finance'));
-  tabMoodTracking.addEventListener('click', () => switchTab('mood-tracking'));
-  tabEmergencyContacts.addEventListener('click', () => switchTab('emergency-contacts'));
-
-  // Expense Form
-  const expenseForm = document.getElementById('expense-form');
-  expenseForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const amount = parseFloat(document.getElementById('expense-amount').value);
-    if (!isNaN(amount) && amount > 0) {
-      appState.user.spent += amount;
-      saveState();
-      renderFinance();
-      expenseForm.reset();
-    }
-  });
-
-  // Mood Tracking
-  const moodInput = document.getElementById('mood-input');
-  const currentMood = document.getElementById('current-mood');
-  const submitMood = document.getElementById('submit-mood');
-
-  moodInput.addEventListener('input', () => {
-    currentMood.textContent = `${moodInput.value}/10`;
-  });
-
-  submitMood.addEventListener('click', () => {
-    const moodValue = parseInt(moodInput.value, 10);
-    logMood(moodValue);
-  });
-
-  // Emergency Contacts Form
-  const emergencyContactsForm = document.getElementById('emergency-contacts-form');
-  emergencyContactsForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('contact-name').value;
-    const relationship = document.getElementById('contact-relationship').value;
-    const contact = document.getElementById('contact-number').value;
-
-    const newContact = { name, relationship, contact, notifyAt: [] };
-    appState.user.emergencyContacts.push(newContact);
-    saveState();
-    renderEmergencyContacts();
-    emergencyContactsForm.reset();
-  });
-
-  // Data Management
-  const exportButton = document.getElementById('export-data');
-  const deleteButton = document.getElementById('delete-data');
-
-  exportButton.addEventListener('click', exportData);
-  deleteButton.addEventListener('click', deleteAllData);
-}
-
-// Switch Tab Function
-function switchTab(tabName) {
-  appState.currentTab = tabName;
-  saveState();
-  // Verstecke alle Sektionen
-  document.querySelectorAll('main > section').forEach(section => section.classList.add('hidden'));
-  // Zeige die ausgewählte Sektion
-  document.getElementById(tabName).classList.remove('hidden');
-}
-
-// Render Tasks in Morgenroutine
 function renderTasks() {
   const taskList = document.getElementById('task-list');
+  if (!taskList) return;
+
   taskList.innerHTML = '';
   appState.user.triggers.forEach((task, index) => {
+    // Beispiel: Jedes "task" könnte ein Objekt sein, z. B. { text, completed }
     const li = document.createElement('li');
     li.className = 'flex items-center bg-surface p-3 rounded shadow hover:shadow-md transition';
     
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.checked = task.completed;
+    checkbox.checked = task.completed || false;
     checkbox.className = 'mr-2';
     checkbox.addEventListener('change', () => toggleTask(index));
     
     const span = document.createElement('span');
-    span.textContent = task.text;
+    span.textContent = task.text || 'Unnamed Task';
     if (task.completed) {
       span.classList.add('line-through', 'text-text-secondary');
     }
@@ -217,16 +172,148 @@ function renderTasks() {
   });
 }
 
-// Toggle Task Status
 function toggleTask(index) {
   appState.user.triggers[index].completed = !appState.user.triggers[index].completed;
   saveState();
   renderTasks();
 }
 
-// Render Emergency Contacts
+/*************************************************************
+ *  Stimmungs-Tracking / Mood
+ *************************************************************/
+
+function renderMood() {
+  const moodElement = document.getElementById('current-mood');
+  if (moodElement && appState.user.currentMood !== null) {
+    moodElement.textContent = `${appState.user.currentMood}/10`;
+  }
+}
+
+function logMood(mood) {
+  const today = new Date().toLocaleDateString();
+  const existingEntry = appState.user.moodHistory.find(entry => entry.date === today);
+  if (existingEntry) {
+    existingEntry.mood = mood;
+  } else {
+    appState.user.moodHistory.push({ date: today, mood });
+  }
+  appState.user.currentMood = mood;
+  
+  saveState();
+  renderMood();
+  detectRiskPatterns();
+}
+
+/*************************************************************
+ *  Empfehlungen / Recommendations
+ *************************************************************/
+
+function generateRecommendations() {
+  const recentMoods = appState.user.moodHistory.slice(-7);
+  if (recentMoods.length === 0) return;
+
+  const averageMood = recentMoods.reduce((sum, entry) => sum + entry.mood, 0) / recentMoods.length;
+  const recommendations = [];
+
+  // Beispiel: Wenn Mood < 5, Entspannungsübungen empfehlen
+  if (averageMood < 5) {
+    recommendations.push('Deine Stimmung liegt zurzeit niedrig. Versuche Atemübungen oder Meditation!');
+  }
+
+  // Weitere Bedingungen / Empfehlungen hinzufügen
+  displayRecommendations(recommendations);
+}
+
+function displayRecommendations(recommendations) {
+  const recommendationsContainer = document.getElementById('recommendations-container');
+  if (!recommendationsContainer) return;
+
+  recommendationsContainer.innerHTML = '';
+  recommendations.forEach(rec => {
+    const p = document.createElement('p');
+    p.className = 'p-2 bg-warning border-l-4 border-warning';
+    p.textContent = rec;
+    recommendationsContainer.appendChild(p);
+  });
+}
+
+/*************************************************************
+ *  Krisenintervention / Notfall
+ *************************************************************/
+
+function startBreathingExercise() {
+  const breathingAnimation = document.getElementById('breathing-animation');
+  if (!breathingAnimation) return;
+  
+  let phase = 0;
+  const phases = ['Einatmen', 'Anhalten', 'Ausatmen'];
+  const timings = [8000, 5000, 7000]; // in Millisekunden
+
+  function nextPhase() {
+    if (phase < phases.length) {
+      breathingAnimation.innerHTML = `<p class="text-center text-text-primary">${phases[phase]}</p>`;
+      setTimeout(() => {
+        phase++;
+        nextPhase();
+      }, timings[phase]);
+    } else {
+      breathingAnimation.innerHTML = `<p class="text-center text-text-primary">Übung beendet</p>`;
+      setTimeout(() => {
+        const modal = document.getElementById('breathing-modal');
+        if (modal) modal.classList.add('hidden');
+      }, 2000);
+    }
+  }
+  nextPhase();
+}
+
+function triggerEmergencyPlan() {
+  // Beispiel: Informiere Kontakte, ggf. API-Call
+  appState.user.emergencyContacts.forEach(contact => {
+    console.log(`Notfallnachricht an ${contact.name} (Kontakt: ${contact.contact})`);
+  });
+  saveState();
+  alert('Notfallplan aktiviert. Deine Vertrauenspersonen wurden benachrichtigt.');
+}
+
+/*************************************************************
+ *  Früherkennung / Risk Patterns
+ *************************************************************/
+
+function detectRiskPatterns() {
+  const moodEntries = appState.user.moodHistory;
+  if (moodEntries.length < 7) return; // Mindestens 7 Tage Daten
+
+  const recentMoods = moodEntries.slice(-7);
+  const averageMood = recentMoods.reduce((sum, entry) => sum + entry.mood, 0) / recentMoods.length;
+
+  if (averageMood < 3) {
+    triggerEarlyWarning();
+  }
+}
+
+function triggerEarlyWarning() {
+  const warningModal = document.getElementById('warning-modal');
+  if (!warningModal) return;
+  
+  warningModal.classList.remove('hidden');
+
+  const closeWarningModal = document.getElementById('close-warning-modal');
+  if (closeWarningModal) {
+    closeWarningModal.addEventListener('click', () => {
+      warningModal.classList.add('hidden');
+    });
+  }
+}
+
+/*************************************************************
+ *  Notfallkontakte
+ *************************************************************/
+
 function renderEmergencyContacts() {
   const contactsList = document.getElementById('emergency-contacts-list');
+  if (!contactsList) return;
+
   contactsList.innerHTML = '';
   appState.user.emergencyContacts.forEach((contact, index) => {
     const li = document.createElement('li');
@@ -249,24 +336,34 @@ function removeEmergencyContact(index) {
   renderEmergencyContacts();
 }
 
-// Render Coping Strategies (Placeholder)
+/*************************************************************
+ *  Coping-Strategien (Platzhalter)
+ *************************************************************/
+
 function renderCopingStrategies() {
-  // Implementiere diese Funktion entsprechend den Anforderungen
+  // Noch nicht implementiert
+  // Bsp.: Liste von Strategien, UI etc.
 }
 
-// Render Progress Chart
+/*************************************************************
+ *  Chart.js Beispiel (Mood-Verlauf)
+ *************************************************************/
+
 function renderProgressChart() {
-  const ctx = document.getElementById('progress-chart').getContext('2d');
+  const chartCanvas = document.getElementById('progress-chart');
+  if (!chartCanvas) return;
+
+  const ctx = chartCanvas.getContext('2d');
   const labels = appState.user.moodHistory.map(entry => entry.date);
   const data = appState.user.moodHistory.map(entry => entry.mood);
 
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: labels,
+      labels,
       datasets: [{
         label: 'Stimmung',
-        data: data,
+        data,
         borderColor: 'rgba(16, 185, 129, 1)',
         borderWidth: 2,
         fill: false
@@ -284,40 +381,23 @@ function renderProgressChart() {
   });
 }
 
-// Log Mood
-function logMood(mood) {
-  const today = new Date().toLocaleDateString();
-  const existingEntry = appState.user.moodHistory.find(entry => entry.date === today);
-  if (existingEntry) {
-    existingEntry.mood = mood;
-  } else {
-    appState.user.moodHistory.push({ date: today, mood });
-  }
-  appState.user.currentMood = mood;
-  saveState();
-  renderMood();
-  detectRiskPatterns();
-}
+/*************************************************************
+ *  Datenaustausch (Export / Delete)
+ *************************************************************/
 
-// Render Current Mood
-function renderMood() {
-  const moodElement = document.getElementById('current-mood');
-  moodElement.textContent = `${appState.user.currentMood}/10`;
-}
-
-// Export Data
 function exportData() {
   const dataStr = JSON.stringify(appState, null, 2);
   const blob = new Blob([dataStr], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
+  
   const a = document.createElement('a');
   a.href = url;
   a.download = 'dailySync_data.json';
   a.click();
+  
   URL.revokeObjectURL(url);
 }
 
-// Delete All Data
 function deleteAllData() {
   if (confirm('Bist du sicher, dass du alle deine Daten löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.')) {
     localStorage.removeItem('dailySyncState');
@@ -325,114 +405,140 @@ function deleteAllData() {
   }
 }
 
-// Breathing Exercise
-function startBreathingExercise() {
-  const breathingAnimation = document.getElementById('breathing-animation');
-  let phase = 0;
-  const phases = ['Einatmen', 'Anhalten', 'Ausatmen'];
-  const timings = [8000, 5000, 7000]; // in Millisekunden
+/*************************************************************
+ *  Tab-Navigation
+ *************************************************************/
 
-  function nextPhase() {
-    if (phase < phases.length) {
-      breathingAnimation.innerHTML = `<p class="text-center text-text-primary">${phases[phase]}</p>`;
-      setTimeout(() => {
-        phase++;
-        nextPhase();
-      }, timings[phase]);
-    } else {
-      breathingAnimation.innerHTML = `<p class="text-center text-text-primary">Übung beendet</p>`;
-      setTimeout(() => {
-        document.getElementById('breathing-modal').classList.add('hidden');
-      }, 2000);
-    }
-  }
-
-  nextPhase();
-}
-
-// Trigger Early Warning
-function detectRiskPatterns() {
-  const moodEntries = appState.user.moodHistory;
-  if (moodEntries.length < 7) return; // Mindestens 7 Tage Daten
-
-  const recentMoods = moodEntries.slice(-7);
-  const averageMood = recentMoods.reduce((sum, entry) => sum + entry.mood, 0) / recentMoods.length;
-
-  if (averageMood < 3) { // Schwellenwert für hohe Risikozonen
-    triggerEarlyWarning();
-  }
-}
-
-function triggerEarlyWarning() {
-  const warningModal = document.getElementById('warning-modal');
-  warningModal.classList.remove('hidden');
-
-  const closeWarningModal = document.getElementById('close-warning-modal');
-  closeWarningModal.addEventListener('click', () => {
-    warningModal.classList.add('hidden');
-  });
-}
-
-// Emergency Plan
-function triggerEmergencyPlan() {
-  appState.user.emergencyContacts.forEach(contact => {
-    // Hier könntest du eine API integrieren, um SMS oder E-Mails zu senden
-    console.log(`Notfallnachricht an ${contact.name}: Kontaktaufnahme erforderlich.`);
-  });
+function switchTab(tabName) {
+  appState.currentTab = tabName;
   saveState();
-  alert('Notfallplan aktiviert. Deine Vertrauenspersonen wurden benachrichtigt.');
+  
+  // Alle Sections im Hauptbereich ausblenden
+  document.querySelectorAll('main > section').forEach(section => section.classList.add('hidden'));
+  
+  // Die ausgewählte Section einblenden
+  const activeSection = document.getElementById(tabName);
+  if (activeSection) {
+    activeSection.classList.remove('hidden');
+  }
 }
 
-// Recommendations
-function generateRecommendations() {
-  const recommendations = [];
+/*************************************************************
+ *  Event Listener Setup
+ *************************************************************/
 
-  // Beispiel: Wenn der durchschnittliche Mood unter 5 liegt, empfehle Entspannungsübungen
-  const recentMoods = appState.user.moodHistory.slice(-7);
-  if (recentMoods.length === 0) return;
-  const averageMood = recentMoods.reduce((sum, entry) => sum + entry.mood, 0) / recentMoods.length;
+function setupEventListeners() {
+  // NOTFALL- / ATEMÜBUNG
+  const emergencyButton = document.getElementById('emergency-button');
+  const breathingModal = document.getElementById('breathing-modal');
+  const closeBreathingModal = document.getElementById('close-breathing-modal');
 
-  if (averageMood < 5) {
-    recommendations.push('Es scheint, dass deine Stimmung in letzter Zeit niedrig ist. Versuche einige Atemübungen oder Meditation.');
+  if (emergencyButton && breathingModal) {
+    emergencyButton.addEventListener('click', () => {
+      breathingModal.classList.remove('hidden');
+      startBreathingExercise();
+      triggerEmergencyPlan();
+    });
+  }
+  if (closeBreathingModal) {
+    closeBreathingModal.addEventListener('click', () => {
+      breathingModal.classList.add('hidden');
+    });
   }
 
-  // Weitere Bedingungen und Empfehlungen hinzufügen
+  // TAB-BUTTONS
+  const tabDashboard = document.getElementById('tab-dashboard');
+  const tabMorningRoutine = document.getElementById('tab-morning-routine');
+  const tabFinance = document.getElementById('tab-finance');
+  const tabMoodTracking = document.getElementById('tab-mood-tracking');
+  const tabEmergencyContacts = document.getElementById('tab-emergency-contacts');
 
-  displayRecommendations(recommendations);
+  tabDashboard?.addEventListener('click', () => switchTab('dashboard'));
+  tabMorningRoutine?.addEventListener('click', () => switchTab('morning-routine'));
+  tabFinance?.addEventListener('click', () => switchTab('finance'));
+  tabMoodTracking?.addEventListener('click', () => switchTab('mood-tracking'));
+  tabEmergencyContacts?.addEventListener('click', () => switchTab('emergency-contacts'));
+
+  // AUSGABEN-FORM
+  const expenseForm = document.getElementById('expense-form');
+  if (expenseForm) {
+    expenseForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const amountEl = document.getElementById('expense-amount');
+      const amount = parseFloat(amountEl.value);
+      if (!isNaN(amount) && amount > 0) {
+        appState.user.spent += amount;
+        saveState();
+        renderFinance();
+        expenseForm.reset();
+      }
+    });
+  }
+
+  // MOOD TRACKING
+  const moodInput = document.getElementById('mood-input');
+  const currentMood = document.getElementById('current-mood');
+  const submitMood = document.getElementById('submit-mood');
+
+  if (moodInput && currentMood && submitMood) {
+    moodInput.addEventListener('input', () => {
+      currentMood.textContent = `${moodInput.value}/10`;
+    });
+    submitMood.addEventListener('click', () => {
+      const moodValue = parseInt(moodInput.value, 10);
+      if (!isNaN(moodValue)) {
+        logMood(moodValue);
+      }
+    });
+  }
+
+  // EMERGENCY CONTACTS FORM
+  const emergencyContactsForm = document.getElementById('emergency-contacts-form');
+  if (emergencyContactsForm) {
+    emergencyContactsForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('contact-name').value;
+      const relationship = document.getElementById('contact-relationship').value;
+      const contact = document.getElementById('contact-number').value;
+
+      const newContact = { name, relationship, contact, notifyAt: [] };
+      appState.user.emergencyContacts.push(newContact);
+      saveState();
+      renderEmergencyContacts();
+      emergencyContactsForm.reset();
+    });
+  }
+
+  // DATA MANAGEMENT
+  const exportButton = document.getElementById('export-data');
+  const deleteButton = document.getElementById('delete-data');
+  if (exportButton) exportButton.addEventListener('click', exportData);
+  if (deleteButton) deleteButton.addEventListener('click', deleteAllData);
 }
 
-function displayRecommendations(recommendations) {
-  const recommendationsContainer = document.getElementById('recommendations-container');
-  recommendationsContainer.innerHTML = '';
-  recommendations.forEach(rec => {
-    const p = document.createElement('p');
-    p.className = 'p-2 bg-warning border-l-4 border-warning';
-    p.textContent = rec;
-    recommendationsContainer.appendChild(p);
-  });
-}
+/*************************************************************
+ *  Gesten (Pull-to-Refresh, etc.)
+ *************************************************************/
 
-// Gesture Handlers (Pull-to-Refresh & Scroll Down)
 function setupGestureHandlers() {
   const main = document.querySelector('main');
-  let touchStart = null;
+  if (!main) return;
 
+  let touchStartY = null;
   main.addEventListener('touchstart', (e) => {
-    touchStart = e.touches[0].clientY;
+    touchStartY = e.touches[0].clientY;
   });
 
   main.addEventListener('touchmove', (e) => {
-    if (!touchStart) return;
+    if (!touchStartY) return;
+    const touchEndY = e.touches[0].clientY;
+    const diff = touchStartY - touchEndY;
 
-    const touchEnd = e.touches[0].clientY;
-    const diff = touchStart - touchEnd;
-
-    if (diff > 50) {
-      // Scroll down action (optional: load more content)
-    } else if (diff < -50) {
-      // Pull to refresh action
+    if (diff < -50) {
+      // Pull to refresh
       refreshApp();
     }
+    // diff > 50 => Scroll down action (optional)
   });
 }
 
@@ -441,16 +547,18 @@ function refreshApp() {
   location.reload();
 }
 
-// Periodic Updates (z.B. tägliche Resets)
+/*************************************************************
+ *  Periodische Updates (tägliche Resets etc.)
+ *************************************************************/
+
 function startPeriodicUpdates() {
-  // Beispiel: Täglicher Reset um Mitternacht
   const now = new Date();
   const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
   const timeUntilMidnight = nextMidnight - now;
 
   setTimeout(() => {
     dailyReset();
-    setInterval(dailyReset, 24 * 60 * 60 * 1000); // Jeden Tag
+    setInterval(dailyReset, 24 * 60 * 60 * 1000);
   }, timeUntilMidnight);
 }
 
@@ -463,182 +571,6 @@ function dailyReset() {
   renderTasks();
 }
 
-// Export der aktuellen Daten als JSON
-function exportData() {
-  const dataStr = JSON.stringify(appState, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'dailySync_data.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// Löschen aller Daten
-function deleteAllData() {
-  if (confirm('Bist du sicher, dass du alle deine Daten löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.')) {
-    localStorage.removeItem('dailySyncState');
-    location.reload();
-  }
-}
-
-// Render Coping Strategies (Placeholder)
-function renderCopingStrategies() {
-  // Implementiere diese Funktion entsprechend den Anforderungen
-}
-// scripts/app.js (Fortsetzung)
-
-// DOM Elements für Tabs
-const tabDashboard = document.getElementById('tab-dashboard');
-const tabMorningRoutine = document.getElementById('tab-morning-routine');
-const tabFinance = document.getElementById('tab-finance');
-
-// Event Listener für Tabs
-tabDashboard.addEventListener('click', () => switchTab('dashboard'));
-tabMorningRoutine.addEventListener('click', () => switchTab('morning-routine'));
-tabFinance.addEventListener('click', () => switchTab('finance'));
-
-// Funktion zum Wechseln der Tabs
-function switchTab(tabName) {
-  state.currentTab = tabName;
-  saveState();
-  // Verstecke alle Sektionen
-  document.querySelectorAll('main > section').forEach(section => section.classList.add('hidden'));
-  // Zeige die ausgewählte Sektion
-  document.getElementById(tabName).classList.remove('hidden');
-}
-// scripts/app.js (Fortsetzung)
-
-// DOM Elements für Tabs
-const tabDashboard = document.getElementById('tab-dashboard');
-const tabMorningRoutine = document.getElementById('tab-morning-routine');
-const tabFinance = document.getElementById('tab-finance');
-
-// Event Listener für Tabs
-tabDashboard.addEventListener('click', () => switchTab('dashboard'));
-tabMorningRoutine.addEventListener('click', () => switchTab('morning-routine'));
-tabFinance.addEventListener('click', () => switchTab('finance'));
-
-// Funktion zum Wechseln der Tabs
-function switchTab(tabName) {
-  state.currentTab = tabName;
-  saveState();
-  // Verstecke alle Sektionen
-  document.querySelectorAll('main > section').forEach(section => section.classList.add('hidden'));
-  // Zeige die ausgewählte Sektion
-  document.getElementById(tabName).classList.remove('hidden');
-}
-// scripts/app.js (Fortsetzung)
-
-// Render Tasks in Morgenroutine
-function renderTasks() {
-  const taskList = document.getElementById('task-list');
-  taskList.innerHTML = '';
-  state.tasks.forEach(task => {
-    const li = document.createElement('li');
-    li.className = 'flex items-center bg-white p-3 rounded shadow hover:shadow-md transition';
-    
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = task.completed;
-    checkbox.className = 'mr-2';
-    checkbox.addEventListener('change', () => toggleTask(task.id));
-    
-    const span = document.createElement('span');
-    span.textContent = task.text;
-    if (task.completed) {
-      span.classList.add('line-through', 'text-gray-500');
-    }
-    
-    li.appendChild(checkbox);
-    li.appendChild(span);
-    taskList.appendChild(li);
-  });
-}
-
-// Initiales Rendern der Aufgaben
-renderTasks();
-// scripts/app.js (Fortsetzung)
-
-// Render Finanzverwaltung
-function renderFinance() {
-  document.getElementById('finance-budget').textContent = `${state.budget}€`;
-  document.getElementById('finance-spent').textContent = `${state.spent}€`;
-  const progressPercent = state.budget > 0 ? (state.spent / state.budget) * 100 : 0;
-  document.getElementById('finance-progress').style.width = `${progressPercent}%`;
-}
-
-// Aktualisiere die Dashboard- und Finanzansicht nach dem Laden
-document.addEventListener('DOMContentLoaded', () => {
-  renderDashboard();
-  renderFinance();
-});
-// scripts/app.js (Fortsetzung)
-
-// DOM Elements für Ausgaben
-const expenseForm = document.getElementById('expense-form');
-const expenseAmount = document.getElementById('expense-amount');
-
-// Event Listener für Ausgabenform
-expenseForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const amount = parseFloat(expenseAmount.value);
-  if (!isNaN(amount) && amount > 0) {
-    state.spent += amount;
-    saveState();
-    renderFinance();
-    expenseForm.reset();
-  }
-});
-// scripts/app.js (Fortsetzung)
-
-const breathingAnimation = document.getElementById('breathing-animation');
-
-function startBreathingExercise() {
-  // Hier kannst du eine komplexere Animation oder Anleitung einbauen
-  let phase = 0;
-  const phases = ['Einatmen', 'Anhalten', 'Ausatmen'];
-  const timings = [8000, 5000, 7000]; // in Millisekunden
-
-  function nextPhase() {
-    if (phase < phases.length) {
-      breathingAnimation.innerHTML = `<p class="text-center text-white">${phases[phase]}</p>`;
-      setTimeout(() => {
-        phase++;
-        nextPhase();
-      }, timings[phase]);
-    } else {
-      breathingAnimation.innerHTML = `<p class="text-center text-white">Übung beendet</p>`;
-    }
-  }
-
-  nextPhase();
-}
-
-emergencyButton.addEventListener('click', () => {
-  breathingModal.classList.remove('hidden');
-  startBreathingExercise();
-});
-// scripts/app.js (Fortsetzung)
-
-// Täglicher Reset
-function dailyReset() {
-  const today = new Date().toLocaleDateString();
-  const lastReset = localStorage.getItem('lastReset');
-
-  if (lastReset !== today) {
-    state.spent = 0;
-    state.triggerFreeDays += 1;
-    saveState();
-    renderDashboard();
-    renderFinance();
-    // Weitere Resets falls nötig
-    localStorage.setItem('lastReset', today);
-  }
-}
-
-// Führe den Reset beim Laden der Seite aus
-document.addEventListener('DOMContentLoaded', () => {
-  dailyReset();
-});
+/*************************************************************
+ *  Ende
+ *************************************************************/
