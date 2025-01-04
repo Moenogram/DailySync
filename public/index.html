@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DailySync – Persönliche Gesundheits- & Finanz-Tracking App</title>
+  
+  <!-- Tailwind CSS via CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <!-- Deine eigenen Styles -->
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body class="bg-background text-text-primary">
+  <!-- Header mit Statusübersicht -->
+  <header class="bg-gradient-to-r from-primary to-secondary p-4 shadow-lg">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-white text-2xl font-bold">DailySync</h1>
+      <div id="current-date" class="text-white"></div>
+    </div>
+  </header>
+
+  <!-- Hauptbereich -->
+  <main class="container mx-auto p-4">
+    <!-- Dashboard & Tagesübersicht -->
+    <section id="dashboard" class="mb-6">
+      <h2 class="text-xl font-semibold mb-4">Dashboard & Tagesübersicht</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Tagesbudget -->
+        <div class="bg-surface p-4 rounded-lg shadow hover:shadow-md transition">
+          <h3 class="text-lg font-medium">Tagesbudget</h3>
+          <p class="text-2xl" id="daily-budget">20€</p>
+          <p class="text-sm text-text-secondary" id="remaining-budget">Verbleibend: 12€</p>
+        </div>
+        <!-- Energielevel -->
+        <div class="bg-surface p-4 rounded-lg shadow hover:shadow-md transition">
+          <h3 class="text-lg font-medium">Energielevel</h3>
+          <p class="text-2xl" id="energy-level">87%</p>
+        </div>
+        <!-- Trigger-freie Tage -->
+        <div class="bg-surface p-4 rounded-lg shadow hover:shadow-md transition">
+          <h3 class="text-lg font-medium">Trigger-freie Tage</h3>
+          <p class="text-2xl" id="trigger-free-days">5 Tage</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Morgenroutine-Checkliste -->
+    <section id="morning-routine" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-4">Morgenroutine</h2>
+      <ul id="task-list" class="space-y-2">
+        <!-- Dynamisch eingefügte Aufgaben -->
+      </ul>
+    </section>
+
+    <!-- Budget-Tracker (Finanzverwaltung) -->
+    <section id="finance" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-4">Finanzverwaltung</h2>
+      <div class="bg-surface p-4 rounded-lg shadow hover:shadow-md transition">
+        <h3 class="text-lg font-medium mb-2">Tägliches Budget</h3>
+        <div class="flex justify-between items-center">
+          <span>Budget:</span>
+          <!-- Platzhalter, wird dynamisch gefüllt -->
+          <span id="finance-budget">${state.budget}€</span>
+        </div>
+        <div class="flex justify-between items-center mt-2">
+          <span>Ausgegeben:</span>
+          <!-- Platzhalter, wird dynamisch gefüllt -->
+          <span id="finance-spent">${state.spent}€</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2 mt-4">
+          <!-- Dynamische Breite -->
+          <div id="finance-progress" class="bg-green-500 h-2 rounded-full" style="width: ${(state.spent / state.budget) * 100}%"></div>
+        </div>
+
+        <!-- Neue Ausgabe hinzufügen -->
+        <div class="mt-4">
+          <h3 class="text-lg font-medium mb-2">Neue Ausgabe hinzufügen</h3>
+          <form id="expense-form" class="flex space-x-2">
+            <input 
+              type="number"
+              id="expense-amount"
+              placeholder="Betrag (€)"
+              class="flex-1 p-2 border rounded"
+              required
+            >
+            <button type="submit" class="bg-primary text-white px-4 py-2 rounded">
+              Hinzufügen
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mood-Tracking -->
+    <section id="mood-tracking" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-4">Stimmungs-Tracking</h2>
+      <div class="bg-surface p-4 rounded-lg shadow hover:shadow-md transition">
+        <label for="mood-input" class="block mb-2">Wie fühlst du dich heute?</label>
+        <input type="range" id="mood-input" min="1" max="10" value="5" class="w-full">
+        <p id="current-mood" class="text-center mt-2">5/10</p>
+        <button id="submit-mood" class="bg-primary text-white px-4 py-2 rounded mt-4">Loggen</button>
+      </div>
+    </section>
+
+    <!-- Notfallkontakte -->
+    <section id="emergency-contacts" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-4">Notfallkontakte</h2>
+      <div class="bg-surface p-4 rounded-lg shadow hover:shadow-md transition">
+        <ul id="emergency-contacts-list" class="space-y-2">
+          <!-- Dynamisch eingefügte Kontakte -->
+        </ul>
+        <form id="emergency-contacts-form" class="mt-4">
+          <label for="contact-name" class="block mb-2">Name:</label>
+          <input type="text" id="contact-name" class="w-full p-2 border rounded" required>
+          
+          <label for="contact-relationship" class="block mb-2 mt-4">Beziehung:</label>
+          <input type="text" id="contact-relationship" class="w-full p-2 border rounded" required>
+          
+          <label for="contact-number" class="block mb-2 mt-4">Kontakt (Telefon/E-Mail):</label>
+          <input type="text" id="contact-number" class="w-full p-2 border rounded" required>
+          
+          <button type="submit" class="bg-primary text-white px-4 py-2 rounded mt-4">Hinzufügen</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Empfehlungen -->
+    <section id="recommendations" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-4">Empfehlungen</h2>
+      <div id="recommendations-container" class="bg-surface p-4 rounded-lg shadow hover:shadow-md transition">
+        <!-- Dynamisch eingefügte Empfehlungen -->
+      </div>
+    </section>
+
+    <!-- Fortschritts-Visualisierung -->
+    <section id="progress-chart-section" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-4">Fortschritts-Visualisierung</h2>
+      <canvas id="progress-chart" width="400" height="200"></canvas>
+    </section>
+
+    <!-- Datenverwaltung -->
+    <section id="data-management" class="hidden mb-6">
+      <h2 class="text-xl font-semibold mb-4">Datenverwaltung</h2>
+      <button id="export-data" class="bg-success text-white px-4 py-2 rounded mr-2">Daten Exportieren</button>
+      <button id="delete-data" class="bg-danger text-white px-4 py-2 rounded">Daten Löschen</button>
+    </section>
+  </main>
+
+  <!-- Navigation am unteren Bildschirmrand -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-surface shadow-inner">
+    <div class="container mx-auto flex justify-around p-2">
+      <!-- Dashboard-Tab -->
+      <button id="tab-dashboard" class="flex flex-col items-center text-text-secondary">
+        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6"
+          />
+        </svg>
+        <span>Dashboard</span>
+      </button>
+      <!-- Morgenroutine-Tab -->
+      <button id="tab-morning-routine" class="flex flex-col items-center text-text-secondary">
+        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 16l4-4-4-4m8 8l-4-4 4-4"
+          />
+        </svg>
+        <span>Morgenroutine</span>
+      </button>
+      <!-- Finanz-Tab -->
+      <button id="tab-finance" class="flex flex-col items-center text-text-secondary">
+        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h5m7-4v4m0 0h-4m4 0l-4-4"
+          />
+        </svg>
+        <span>Finanzen</span>
+      </button>
+      <!-- Stimmung-Tab -->
+      <button id="tab-mood-tracking" class="flex flex-col items-center text-text-secondary">
+        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 14l9-5-9-5-9 5 9 5zm0 0v6m0-6c4.418 0 8-3.582 8-8S16.418 0 12 0 4 3.582 4 8s3.582 8 8 8z"
+          />
+        </svg>
+        <span>Stimmung</span>
+      </button>
+      <!-- Notfall -->
+      <button id="emergency-button" class="flex flex-col items-center text-danger">
+        <svg class="w-6 h-6 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z"
+          />
+        </svg>
+        <span>Notfall</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Atemübungs-Modal -->
+  <div id="breathing-modal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-surface rounded-lg p-6 w-11/12 md:w-1/3">
+      <h2 class="text-xl font-semibold mb-4">Atemübung</h2>
+      <div id="breathing-animation" class="mb-4">
+        <!-- Visuelle Animation hier -->
+      </div>
+      <button id="close-breathing-modal" class="bg-primary text-white px-4 py-2 rounded">
+        Schließen
+      </button>
+    </div>
+  </div>
+
+  <!-- Frühwarnung-Modal -->
+  <div id="warning-modal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
+    <div class="bg-surface p-6 rounded shadow-lg">
+      <h2 class="text-xl font-semibold mb-4">Frühwarnung</h2>
+      <p>Es scheint, dass du in letzter Zeit Schwierigkeiten hattest. Möchtest du einige Coping-Strategien ausprobieren?</p>
+      <button id="close-warning-modal" class="bg-primary text-white px-4 py-2 rounded mt-4">
+        Schließen
+      </button>
+   
