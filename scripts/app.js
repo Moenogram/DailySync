@@ -570,7 +570,19 @@ function dailyReset() {
   renderFinance();
   renderTasks();
 }
+const tabDebtManagement = document.getElementById('tab-debt-management');
 
+tabDebtManagement.addEventListener('click', () => switchTab('debt-management'));
+
+// Aktualisiere die switchTab Funktion
+function switchTab(tabName) {
+  appState.currentTab = tabName;
+  saveState();
+  // Verstecke alle Sektionen
+  document.querySelectorAll('main > section').forEach(section => section.classList.add('hidden'));
+  // Zeige die ausgewählte Sektion
+  document.getElementById(tabName).classList.remove('hidden');
+}
 /*************************************************************
  *  Ende
  *************************************************************/
