@@ -1,26 +1,38 @@
 const appState = {
   user: {
-    name: string,
-    dailyBudget: number,
-    spent: number,
-    energyLevel: number,
-    triggerFreeDays: number,
-    currentMood: string,
+    name: 'Muhammet Şen',
+    dailyBudget: 20,
+    spent: 8,
+    energyLevel: 87,
+    triggerFreeDays: 5,
+    currentMood: null,
     stats: {
       streaks: {
-        triggerFree: number,
-        budgetCompliance: number
+        triggerFree: 5,
+        budgetCompliance: 3
       }
     },
-    debts: DebtType[],
-    payments: PaymentType[]
+    triggers: [],
+    moodHistory: [],
+    triggerHistory: [],
+    emergencyContacts: [],
+    copingStrategies: [],
+    debts: [], // Neue Felder
+    payments: []
   },
   settings: {
-    theme: 'light' | 'dark',
-    notifications: boolean,
+    theme: 'light',
+    notifications: true,
     emergencyMode: {
-      enabled: boolean,
-      level: number
+      enabled: false,
+      level: 1
+    },
+    personalSettings: {
+      triggerThresholds: {},
+      budgetPeriods: {},
+      notificationPreferences: {},
+      budget: 20
     }
-  }
-}
+  },
+  currentTab: 'dashboard' // Aktueller Tab
+};
